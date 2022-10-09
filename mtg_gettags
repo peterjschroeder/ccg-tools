@@ -1,0 +1,163 @@
+#!/usr/bin/python3
+
+import csv, json, requests
+
+tags = [
+        # Draw
+        'draw',
+
+        # Ramp
+        'buff-mana', 'mana-dork', 'mana-dork-egg', 'mana-egg', 
+        'mana-increaser', 'mana-producer', 'mana-rock', 'mana-source-type', 
+        'ramp', 
+
+        # Removal
+        'banish', 'banish-artifact', 'banish-creature', 'banish-enchantment',
+        'banish-land', 'banish-nonland', 'banish-permanent',
+        'banish-planeswalker', 'banish-spell', 'burn', 'lockdown', 
+        'lockdown-artifact', 'lockdown-creature', 'lockdown-land', 
+        'lockdown-nonland', 'lockdown-permanent', 'lockdown-planeswalker', 
+        'removal', 'removal-artifact', 'removal-artifact-bounce', 
+        'removal-artifact-destroy', 'removal-artifact-exile', 
+        'removal-artifact-sacrifice', 'removal-artifact-tuck', 'removal-aura', 
+        'removal-aura-bounce', 'removal-aura-destroy', 'removal-aura-exile', 
+        'removal-creature', 'removal-creature-bounce', 'removal-creature-burn', 
+        'removal-creature-destroy', 'removal-creature-exile', 
+        'removal-creature-nonblack', 'removal-creature-sacrifice', 
+        'removal-creature-toughness', 'removal-creature-tuck', 
+        'removal-enchantment', 'removal-enchantment-bounce', 
+        'removal-enchantment-destroy', 'removal-enchantment-exile', 
+        'removal-enchantment-sacrifice', 'removal-enchantment-tuck', 
+        'removal-equipment', 'removal-equipment-bounce', 
+        'removal-equipment-destroy', 'removal-equipment-exile', 
+        'removal-land', 'removal-land-bounce', 'removal-land-destroy', 
+        'removal-land-exile', 'removal-land-sacrifice', 'removal-land-tuck', 
+        'removal-noncreature', 'removal-noncreature-bounce', 
+        'removal-noncreature-destroy', 'removal-noncreature-tuck', 
+        'removal-nonenchantment-destroy', 'removal-nonenchantment-tuck', 
+        'removal-nonland', 'removal-nonland-bounce', 'removal-nonland-destroy', 
+        'removal-nonland-exile', 'removal-nonland-sacrifice', 
+        'removal-nonland-tuck', 'removal-permanent', 
+        'removal-permanent-bounce', 'removal-permanent-destroy', 
+        'removal-permanent-exile', 'removal-permanent-sacrifice', 
+        'removal-permanent-tuck', 'removal-planeswalker', 
+        'removal-planeswalker-bounce', 'removal-planeswalker-burn', 
+        'removal-planeswalker-destroy', 'removal-planeswalker-exile', 
+        'removal-planeswalker-sacrifice', 'removal-planeswalker-tuck', 
+        'removal-sacrifice', 'removal-token', 'sweeper', 'sweeper-artifact', 
+        'sweeper-artifact-bounce', 'sweeper-artifact-destroy', 
+        'sweeper-artifact-exile', 'sweeper-artifact-sacrifice', 
+        'sweeper-aura', 'sweeper-aura-bounce', 'sweeper-aura-destroy', 
+        'sweeper-creature', 'sweeper-creature-bounce', 
+        'sweeper-creature-burn', 'sweeper-creature-destroy', 
+        'sweeper-creature-exile', 'sweeper-creature-sacrifice', 
+        'sweeper-creature-toughness', 'sweeper-creature-tuck', 
+        'sweeper-destroy', 'sweeper-enchantment', 
+        'sweeper-enchantment-bounce', 'sweeper-enchantment-destroy', 
+        'sweeper-enchantment-exile', 'sweeper-enchantment-sacrifice', 
+        'sweeper-enchantment-tuck', 'sweeper-equipment', 
+        'sweeper-equipment-destroy', 'sweeper-graveyard', 'sweeper-land', 
+        'sweeper-land-bounce', 'sweeper-land-destroy', 'sweeper-land-exile', 
+        'sweeper-land-sacrifice', 'sweeper-noncreature-destroy', 
+        'sweeper-nonland', 'sweeper-nonland-bounce', 
+        'sweeper-nonland-destroy', 'sweeper-nonland-exile', 
+        'sweeper-nonland-sacrifice', 'sweeper-one-sided', 
+        'sweeper-permanent', 'sweeper-permanent-bounce', 
+        'sweeper-permanent-destroy', 'sweeper-permanent-exile', 
+        'sweeper-permanent-sacrifice', 'sweeper-permanent-tuck', 
+        'sweeper-planeswalker', 'sweeper-planeswalker-burn', 
+        'sweeper-planeswalker-destroy', 'sweeper-planeswalker-exile', 
+        'sweeper-planeswalker-sacrifice', 'theft', 'theft-artifact', 
+        'theft-artifact-creature', 'theft-aura', 'theft-cast', 
+        'theft-commander', 'theft-creature', 'theft-enchantment', 
+        'theft-equipment', 'theft-land', 'theft-mana', 'theft-mass', 
+        'theft-noncreature', 'theft-nonland', 'theft-ownership', 
+        'theft-permanent', 'theft-planeswalker', 'theft-spell', 
+        
+        # Counterspell
+        'counterspell', 'counterspell-artifact', 'counterspell-aura', 
+        'counterspell-automatic', 'counterspell-bounce', 
+        'counterspell-creature', 'counterspell-enchantment', 
+        'counterspell-exile', 'counterspell-free', 'counterspell-instant', 
+        'counterspell-noncreature', 'counterspell-planeswalker', 
+        'counterspell-reusable', 'counterspell-sacrifice', 
+        'counterspell-soft', 'counterspell-sorcery', 'counterspell-sweeper', 
+        'counterspell-tuck', 
+
+        # Tutor
+        'tutor', 'tutor-arcane', 'tutor-artifact', 'tutor-artifact-colored', 
+        'tutor-artifact-creature', 'tutor-artifact-equipment', 
+        'tutor-artifact-land', 'tutor-artifact-legendary', 
+        'tutor-artifact-noncreature', 'tutor-artifact-vehicle', 
+        'tutor-augment', 'tutor-aura-creature', 'tutor-aura-curse', 
+        'tutor-black', 'tutor-blue', 'tutor-card', 'tutor-cast', 'tutor-cmc', 
+        'tutor-color', 'tutor-copy', 'tutor-creature', 'tutor-creature-ally', 
+        'tutor-creature-assembly-worker', 'tutor-creature-aurochs', 
+        'tutor-creature-colorless', 'tutor-creature-construct', 
+        'tutor-creature-deathtouch', 'tutor-creature-demon', 
+        'tutor-creature-dinosaur', 'tutor-creature-dragon', 
+        'tutor-creature-dwarf', 'tutor-creature-eldrazi', 
+        'tutor-creature-elemental', 'tutor-creature-elf', 
+        'tutor-creature-embalm', 'tutor-creature-eternalize', 
+        'tutor-creature-faerie', 'tutor-creature-flying', 
+        'tutor-creature-giant', 'tutor-creature-goblin', 'tutor-creature-god', 
+        'tutor-creature-green', 'tutor-creature-hexproof', 
+        'tutor-creature-kithkin', 'tutor-creature-legendary', 
+        'tutor-creature-mercenary', 'tutor-creature-merfolk', 
+        'tutor-creature-minotaur', 'tutor-creature-myr', 
+        'tutor-creature-pirate', 'tutor-creature-power', 'tutor-creature-rat', 
+        'tutor-creature-reach', 'tutor-creature-rebel', 
+        'tutor-creature-sliver', 'tutor-creature-spirit', 
+        'tutor-creature-toughness', 'tutor-creature-trample', 
+        'tutor-creature-treefolk', 'tutor-creature-vampire', 
+        'tutor-creature-wizard', 'tutor-creature-zombie', 
+        'tutored-by-name', 'tutor-enchantment', 'tutor-enchantment-aura', 
+        'tutor-enchantment-saga', 'tutor-flash', 'tutor-flashback', 
+        'tutor-from-opponent', 'tutor-green', 'tutor-host', 'tutor-instant', 
+        'tutor-instant-blue', 'tutor-instant-red', 'tutor-instant-white', 
+        'tutor-interaction', 'tutor-legendary', 'tutor-monocolored', 
+        'tutor-multicolored', 'tutor-ninja', 'tutor-nonland', 
+        'tutor-permanent', 'tutor-permanent-snow', 'tutor-planeswalker', 
+        'tutor-red', 'tutor-rune', 'tutor-seek', 'tutor-self', 'tutor-shrine', 
+        'tutor-sorcery', 'tutor-to', 'tutor-to-battlefield', 'tutor-to-exile', 
+        'tutor-to-graveyard', 'tutor-to-hand', 'tutor-to-top', 'tutor-trap', 
+        'tutor-white'
+        ]
+
+cards = dict()
+page = ''
+
+def get_card_names(uri, tag):
+    global cards, page
+
+    response = requests.get(uri)
+    response = response.content.decode('utf8')
+    data = json.loads(response)
+    card_names = [data['name'] for data in data['data']]
+    for i in card_names:
+        if i in cards.keys():
+            cards[i] = cards.get(i)+', '+tag
+        else:
+            cards[i] = tag
+    
+    try:
+        page = data['next_page']
+        return True
+    except:
+        return False
+
+for i in tags:
+    page = 'https://api.scryfall.com/cards/search?&q=function=%s' % i
+    print('Getting tags for %s.' % i)
+
+    while True:
+        if get_card_names(page, i):
+            continue
+        else:
+            break
+
+with open('Tags.csv', 'w') as csvfile:
+    csvwriter = csv.writer(csvfile)
+    for k, v in cards.items():
+        csvwriter.writerow([k, v])
+
